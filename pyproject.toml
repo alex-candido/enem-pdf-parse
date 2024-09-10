@@ -1,0 +1,18 @@
+[project]
+name = "enem_pdf_extractor"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Alex Candido", email = "alex.candido.tec@gmail.com"},
+]
+dependencies = [
+    "PyMuPDF>=1.23.8",
+    "PyMuPDFb>=1.23.7",
+]
+
+requires-python = "==3.12.*"
+license = {text = "MIT"}
+readme = "README.md"
+
+[tool.pdm]
+distribution = false
