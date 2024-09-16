@@ -14,16 +14,15 @@ class PagePreProcessingService():
         self.total_question_number = total_question_number
         
     def execute(self):    
-        text_processing_dict: dict = {"text": "", "page_first_question": 0, "total_question_number": 0 }
+        text_processing_dict: dict = {"text": "", "page_first_question": 0, "total_question_number": 0, "page_index": 0 }
         
         current_page: pymupdf.pymupdf.Page = self.pdf_reader[self.page_index]
         
         page_text: str = current_page.get_text()
         page_text = page_text.replace("Questão", "QUESTÃO")
         # acha a primeira questão da folha
-        yield_all_substrings = YieldAllSubstringsService(input_str = page_text, sub_str = enem_constants.__QUESTION_IDENTIFIER__).execute()
         
-        first_question_str_index: int = next(yield_all_substrings, -1 ) 
+        first_question_str_index: int = next(YieldAllSubstringsService(input_str = page_text, sub_str = enem_constants.__QUESTION_IDENTIFIER__).execute(), -1 ) 
         
         if first_question_str_index == -1:
             return {} # se não tiver questões na página (pagina de redação) pula a iteração
@@ -39,21 +38,20 @@ class PagePreProcessingService():
         
         for _ in YieldAllSubstringsService(page_text, enem_constants.__QUESTION_IDENTIFIER__).execute():
             self.total_question_number += 1  #aumenta o numero de questoes ja processadas com todas daquela página
-            
         
         image_list:list = current_page.get_images()
         
-        if image_list:
-            text_processing_dict.update({"text":"","page_first_question": page_first_question, "total_question_number": self.total_question_number})
+        if len(image_list):
+            text_processing_dict.update({"text": page_text, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "page_index": self.page_index})
             return text_processing_dict #retorna dict sem imagens
-
+         
         
         #caso tenha imagens na página vamos pular ela, já que não podemos extrair a imagem   
-        #não é possível fazer essa verificação no começo pois é preciso contar todas as questões da página para a variavel total_question_number, já que ela dita qual matéria esta sendo processada
+        #não é possível fazer essa verificação no começo pois é preciso contar todas as questões da página para a variável total_question_number, já que ela dita qual matéria esta sendo processada
 
         page_text += f" {enem_constants.__QUESTION_IDENTIFIER__}" #coloca isso no final do texto para ajudar no processamento, já que teremos uma substr de parada do algoritmo
         
-        text_processing_dict.update({"text":page_text,"page_first_question": page_first_question, "total_question_number": self.total_question_number})
+        text_processing_dict.update({"text": page_text, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "page_index": self.page_index})
         
         return text_processing_dict
         

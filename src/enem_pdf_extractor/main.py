@@ -65,13 +65,13 @@ class EnemPDFextractor():
         
         modified_text = re.sub(answers_pattern, "", raw_answer_text, flags=re.MULTILINE)
         
-        self.answer_pdf_text: str = modified_text 
         # texto do gabarito, usado para a função que pega a resposta oficial
+        self.answer_pdf_text: str = modified_text 
         self.answer_pdf_path: str = answers_pdf_path
         self.test_pdf_path: str = test_pdf_path
         
-        absolute_path: str = os.path.abspath(extracted_data_path)
         # cria path absoluto para o diretório de output com o argumento da função
+        absolute_path: str = os.path.abspath(extracted_data_path)
         
         if not os.path.isdir(absolute_path):
             print("diretório não encontrado, criando um novo")
@@ -79,34 +79,26 @@ class EnemPDFextractor():
             
         self.extracted_data_path: str = absolute_path
         
-        test_pdf_reader: pymupdf.pymupdfHandleDayOneTests.Document = pymupdf.open(test_pdf_path) 
-        
+        test_pdf_reader: pymupdf.pymupdf.Document = pymupdf.open(test_pdf_path) 
         regex_return: list = re.findall(enem_constants.__YEAR_PATTERN__, self.test_pdf_path)
         test_year: int = int(regex_return[0]) 
         
         if enem_constants.__DAY_ONE_SUBSTR__ in test_pdf_path:     
             if not self.process_questions_with_images:
                 print("D1 - NOT WITH IMAGES")
-                
-                HandleDayOneTestsService(test_pdf_reader, test_year, output_type = self.output_type, answer_pdf_text = self.answer_pdf_text).execute()
-                
-        #     else:
-        #         # pdf_reader = fitz.open(self.test_pdf_path)
-        #         HandleDayOneWithImagesService(test_pdf_reader, test_year = test_year).execute()
-        #         pprint.pp({
-        #             "D1 - WITH IMAGES",
-        #         })
-        # else:
-        #     if not self.process_questions_with_images:
-        #         HandleDayTwoTestsService(test_pdf_reader, test_year).execute()
-        #         pprint.pp({
-        #             "D2 - NOT WITH IMAGES",
-        #         })
-        #     else:
-        #         HandleDayTwoWithImagesService(test_pdf_reader, test_year).execute()
-        #         pprint.pp({
-        #             "D2 - WITH IMAGES",
-        #         })
+                HandleDayOneTestsService(test_pdf_reader, test_year, output_type = self.output_type, answer_pdf_text = self.answer_pdf_text, extracted_data_path = self.extracted_data_path).execute()
+            else:
+                print("D1 - WITH IMAGES")
+                pdf_reader: pymupdf.pymupdf.Document = pymupdf.open(self.test_pdf_path) 
+                HandleDayOneWithImagesService(test_pdf_reader, test_year = test_year).execute()
+        else:
+            if not self.process_questions_with_images:
+                print("D2 - NOT WITH IMAGES")
+                HandleDayTwoTestsService(test_pdf_reader, test_year).execute()
+            else:
+                print("D2 - WITH IMAGES")
+                HandleDayTwoWithImagesService(test_pdf_reader, test_year).execute()
+  
 
     
         
