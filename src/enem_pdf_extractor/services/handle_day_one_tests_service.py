@@ -7,10 +7,10 @@ import enem_pdf_extractor.constants.enem_constants as enem_constants
 
 from typing import Any  
 
-from enem_pdf_extractor.services.parse_alternatives_service import ParseAlternativesService
 from enem_pdf_extractor.services.page_preprocessing_service import PagePreProcessingService
 from enem_pdf_extractor.services.yield_all_substrings_service import YieldAllSubstringsService 
 from enem_pdf_extractor.services.find_correct_answer_service import FindCorrectAnswerService
+from enem_pdf_extractor.services.parse_alternatives_service import ParseAlternativesService
 from enem_pdf_extractor.services.md_parse_alternatives_service import MdParseAlternativesService
 from enem_pdf_extractor.services.get_json_from_question_service import GetJsonFromQuestionService
 
@@ -50,12 +50,16 @@ class HandleDayOneTestsService():
                     total_question_number = total_question_number
             ).execute()
             
-            if not page_attributes: #dict vazio, pagina não tem questões
-                 continue  
             
+            if not page_attributes: #dict vazio, pagina não tem questões
+                 continue 
+            
+            
+            page_index: int = page_attributes.get("page_index")
             page_first_question: int = page_attributes.get("page_first_question")
-            total_question_number = page_attributes.get("total_question_number")
-            text:str = page_attributes.get("text") 
+            total_question_number: int = page_attributes.get("total_question_number")
+            text: str = page_attributes.get("text") 
+            
             #dict com texto vazio (imagens na pagina), mas atualizando page_first question e total_question_number
             if not text: 
                 continue
@@ -87,6 +91,8 @@ class HandleDayOneTestsService():
                 
                 unparsed_alternatives: str = text[question_start_index:position]
                 
+                print(page_index, unparsed_alternatives)
+                
                 parsed_question_vals: Any = ParseAlternativesService(unparsed_alternatives, output_type = self.output_type).execute()
                 
                 if isinstance(parsed_question_vals, tuple):
@@ -97,7 +103,7 @@ class HandleDayOneTestsService():
                     
                 if self.output_type == "markdown":
                     parsed_question: str = MdParseAlternativesService(parsed_question).execute()
-                    
+
                 if parsed_question == "non-standard alternatives": #caso a questão tenha alternativas de imagens (mas que o PDF não consegue detectar)     
                     question_start_index = position
                     answer_number += 1
@@ -106,6 +112,7 @@ class HandleDayOneTestsService():
                 #valor da questão depende do tipo de output
                 if self.output_type == "txt":
                     parsed_question = enem_constants.__TXT_QUESTION_TEMPLATE__.format(test_year = self.test_year, question_text = parsed_question, correct_answer = correct_answer)
+                    
                 elif self.output_type == "markdown":
                     parsed_question = enem_constants.__MD_QUESTION_TEMPLATE__.format(test_year = self.test_year, question_text = parsed_question, correct_answer = correct_answer)
                 else:
@@ -152,39 +159,39 @@ class HandleDayOneTestsService():
                 answer_number += 1
         
         #escrever as strings extraidas nos seus arquivos respectivos
-        if self.output_type == "txt"  or self.output_type == "markdown":   
-            file_type_iden: str = ".txt" if self.output_type == "txt" else ".md"
+        # if self.output_type == "txt"  or self.output_type == "markdown":   
+        #     file_type_iden: str = ".txt" if self.output_type == "txt" else ".md"
 
-            file_path:str = os.path.join(self.extracted_data_path,f"{self.test_year}_eng_questions{file_type_iden}" )
-            with open(file_path, "w") as f_eng:
-                f_eng.write(english_questions)
+        #     file_path:str = os.path.join(self.extracted_data_path,f"{self.test_year}_eng_questions{file_type_iden}" )
+        #     with open(file_path, "w") as f_eng:
+        #         f_eng.write(english_questions)
                 
-            file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_spani_questions{file_type_iden}" )
-            with open(file_path, "w") as f_spani:
-                    f_spani.write(spanish_questions)
+        #     file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_spani_questions{file_type_iden}" )
+        #     with open(file_path, "w") as f_spani:
+        #             f_spani.write(spanish_questions)
 
-            file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_lang_questions{file_type_iden}" )     
-            with open(file_path, "w") as f_lang:
-                f_lang.write(languages_arts_questions)
+        #     file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_lang_questions{file_type_iden}" )     
+        #     with open(file_path, "w") as f_lang:
+        #         f_lang.write(languages_arts_questions)
                 
-            file_path= os.path.join(self.extracted_data_path, f"{self.test_year}_huma_questions{file_type_iden}")
-            with open(file_path, "w") as f_huma:
-                f_huma.write(humanities_questions)
-        else:
-            file_path:str = os.path.join(self.extracted_data_path,f"{self.test_year}_eng_questions.json" )
-            with open(file_path, "w") as f_eng:
-                json.dump(english_questions,f_eng, indent=4,  ensure_ascii=False)
+        #     file_path= os.path.join(self.extracted_data_path, f"{self.test_year}_huma_questions{file_type_iden}")
+        #     with open(file_path, "w") as f_huma:
+        #         f_huma.write(humanities_questions)
+        # else:
+        #     file_path:str = os.path.join(self.extracted_data_path,f"{self.test_year}_eng_questions.json" )
+        #     with open(file_path, "w") as f_eng:
+        #         json.dump(english_questions,f_eng, indent=4,  ensure_ascii=False)
                 
-            file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_spani_questions.json" )
-            with open(file_path, "w") as f_spani:
-                    json.dump(spanish_questions,f_spani,  indent=4,  ensure_ascii=False)
+        #     file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_spani_questions.json" )
+        #     with open(file_path, "w") as f_spani:
+        #             json.dump(spanish_questions,f_spani,  indent=4,  ensure_ascii=False)
 
-            file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_lang_questions.json" )     
-            with open(file_path, "w") as f_lang:
-                json.dump(languages_arts_questions,f_lang, indent=4,  ensure_ascii=False)
+        #     file_path = os.path.join(self.extracted_data_path,f"{self.test_year}_lang_questions.json" )     
+        #     with open(file_path, "w") as f_lang:
+        #         json.dump(languages_arts_questions,f_lang, indent=4,  ensure_ascii=False)
                 
-            file_path= os.path.join(self.extracted_data_path, f"{self.test_year}_huma_questions.json" )
-            with open(file_path, "w") as f_huma:
-                json.dump(humanities_questions,f_huma, indent=4,  ensure_ascii=False)
+        #     file_path= os.path.join(self.extracted_data_path, f"{self.test_year}_huma_questions.json" )
+        #     with open(file_path, "w") as f_huma:
+        #         json.dump(humanities_questions,f_huma, indent=4,  ensure_ascii=False)
                 
             

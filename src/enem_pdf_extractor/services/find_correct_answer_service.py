@@ -12,6 +12,7 @@ class FindCorrectAnswerService():
     def execute(self): 
         if self.day_one:
             if self.question_number > 5:
+                # -5 pois a partir do questão 5, inicia o intervalo 1
                 self.question_number = self.question_number -5
                 
             question_string = str(self.question_number)
@@ -33,3 +34,19 @@ class FindCorrectAnswerService():
                 return "não achou a questão"
             
             return self.answer_pdf_text[answer_index]
+        # else:
+        #     question_number += 90  #gabarito do segundo dia começa da questão 91, mas a lógica do código conta as questões do 0 independente do dia, entao para achar é preciso somar +90
+
+        #     question_string = str(question_number)
+        #     question_num_pattern = r'\b' + question_string + r'\b'
+        #     num_match =  re.search(question_num_pattern, self.answer_pdf_text)
+
+        #     if num_match:
+        #         if question_number < 100 :
+        #             answer_index = (num_match.start() +3) #se o numero da questao de for de 2 digitos (antes de subtrai 90), a resposta está a 3 espaços na direita
+        #         else:  
+        #             answer_index = (num_match.start() +4) #se tiver 3 digitos, a resposta está a 4 espaços na direita
+
+        #         return self.answer_pdf_text[answer_index]
+        #     else:
+        #         return "não achou a questão"

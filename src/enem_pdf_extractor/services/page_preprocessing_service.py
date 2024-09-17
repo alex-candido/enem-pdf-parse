@@ -14,12 +14,12 @@ class PagePreProcessingService():
         self.total_question_number = total_question_number
         
     def execute(self):    
-        text_processing_dict: dict = {"text": "", "page_first_question": 0, "total_question_number": 0, "page_index": 0 }
+        text_processing_dict: dict = {"page_index": 0, "page_first_question": 0, "total_question_number": 0, "text": "" }
         
         current_page: pymupdf.pymupdf.Page = self.pdf_reader[self.page_index]
         
         page_text: str = current_page.get_text()
-        page_text = page_text.replace("Questão", "QUESTÃO")
+        # page_text = page_text.replace("Questão", "QUESTÃO")
         # acha a primeira questão da folha
         
         first_question_str_index: int = next(YieldAllSubstringsService(input_str = page_text, sub_str = enem_constants.__QUESTION_IDENTIFIER__).execute(), -1 ) 
@@ -37,12 +37,12 @@ class PagePreProcessingService():
         page_first_question: int = self.total_question_number + 1 #a primeira questão da prox página sera o numero total de questões processadas ate o momento + 1 (a primeira questão em si) 
         
         for _ in YieldAllSubstringsService(page_text, enem_constants.__QUESTION_IDENTIFIER__).execute():
-            self.total_question_number += 1  #aumenta o numero de questoes ja processadas com todas daquela página
+            self.total_question_number += 1  #aumenta o numero de questões ja processadas com todas daquela página
         
         image_list:list = current_page.get_images()
         
         if len(image_list):
-            text_processing_dict.update({"text": page_text, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "page_index": self.page_index})
+            text_processing_dict.update({"page_index": self.page_index, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "text": page_text})
             return text_processing_dict #retorna dict sem imagens
          
         
@@ -51,7 +51,7 @@ class PagePreProcessingService():
 
         page_text += f" {enem_constants.__QUESTION_IDENTIFIER__}" #coloca isso no final do texto para ajudar no processamento, já que teremos uma substr de parada do algoritmo
         
-        text_processing_dict.update({"text": page_text, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "page_index": self.page_index})
+        text_processing_dict.update({"page_index": self.page_index, "page_first_question": page_first_question, "total_question_number": self.total_question_number, "text": page_text})
         
         return text_processing_dict
         

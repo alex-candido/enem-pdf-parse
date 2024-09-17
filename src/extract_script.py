@@ -5,7 +5,7 @@ image_extraction:list = [True,False]
 day_color_identifier:list[tuple] = [(1,1),(2,7)] 
 
 # years:list[int] = [23,22,21,20]
-years:list[int] = [23]
+years:list[int] = [22]
 output_file:list[str] = ["txt", "json"]
 pdf_folder_path:str = "pdfs_enem"
 test_pdf_path: str = "src/pdfs_enem"
